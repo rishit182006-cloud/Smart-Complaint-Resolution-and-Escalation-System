@@ -1,0 +1,243 @@
+.complaint-details-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  color: var(--color-gray-500);
+  font-weight: 500;
+  transition: color 0.2s;
+  align-self: flex-start;
+}
+
+.back-button:hover {
+  color: var(--color-gray-900);
+}
+
+.details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.title-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.complaint-id-large {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  padding: var(--spacing-1) var(--spacing-3);
+  border-radius: var(--radius-sm);
+  display: inline-block;
+  align-self: flex-start;
+}
+
+.action-section {
+  display: flex;
+  gap: var(--spacing-3);
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--spacing-6);
+  align-items: start;
+}
+
+/* Info Card */
+.info-badges {
+  display: flex;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-6);
+  flex-wrap: wrap;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+  padding-bottom: var(--spacing-6);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.info-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.info-label {
+  font-size: 0.875rem;
+  color: var(--color-gray-500);
+}
+
+.info-value {
+  font-weight: 500;
+  color: var(--color-gray-900);
+}
+
+.section-title {
+  font-size: 1.125rem;
+  margin-bottom: var(--spacing-3);
+  color: var(--color-gray-800);
+}
+
+.description-text {
+  color: var(--color-gray-700);
+  line-height: 1.6;
+}
+
+/* Comments section */
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-5);
+  margin-bottom: var(--spacing-6);
+}
+
+.comment-item {
+  display: flex;
+  gap: var(--spacing-4);
+}
+
+.comment-avatar {
+  background-color: var(--color-gray-200);
+  color: var(--color-gray-600);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.comment-content {
+  background-color: var(--color-gray-50);
+  padding: var(--spacing-4);
+  border-radius: var(--radius-md);
+  flex-grow: 1;
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-2);
+}
+
+.comment-author {
+  font-weight: 600;
+  color: var(--color-gray-900);
+}
+
+.comment-date {
+  font-size: 0.75rem;
+  color: var(--color-gray-500);
+  margin-left: auto;
+}
+
+.comment-text {
+  color: var(--color-gray-700);
+}
+
+.add-comment-form {
+  border-top: 1px solid var(--color-gray-200);
+  padding-top: var(--spacing-5);
+}
+
+.mt-3 {
+  margin-top: var(--spacing-3);
+}
+
+.mr-2 {
+  margin-right: var(--spacing-2);
+}
+
+.mb-0 {
+  margin-bottom: 0 !important;
+}
+
+/* Timeline */
+.timeline {
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-event {
+  display: flex;
+  gap: var(--spacing-4);
+}
+
+.timeline-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 16px;
+}
+
+.marker-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  z-index: 1;
+}
+
+.status-open { background-color: var(--color-gray-400); }
+.status-in-progress { background-color: var(--color-warning); }
+.status-escalated { background-color: var(--color-danger); }
+.status-resolved { background-color: var(--color-success); }
+
+.marker-line {
+  width: 2px;
+  background-color: var(--color-gray-200);
+  flex-grow: 1;
+  min-height: 40px;
+  margin: var(--spacing-1) 0;
+}
+
+.timeline-content {
+  flex-grow: 1;
+  padding-bottom: var(--spacing-6);
+}
+
+.timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-2);
+}
+
+.timeline-date {
+  font-size: 0.75rem;
+  color: var(--color-gray-500);
+}
+
+.timeline-note {
+  font-size: 0.875rem;
+  color: var(--color-gray-700);
+}
+
+/* Reporter Info */
+.reporter-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+}
