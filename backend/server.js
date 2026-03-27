@@ -21,9 +21,11 @@ app.get("/", (req, res) => {
 //connect route 
 const authRoutes = require("./routes/authRoutes");
 const protectedRoutes = require("./routes/protectedRoutes");
+const complaintRoutes = require("./routes/complaintRoutes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api", protectedRoutes);
+app.use("/api/complaints", complaintRoutes);
 
 
 

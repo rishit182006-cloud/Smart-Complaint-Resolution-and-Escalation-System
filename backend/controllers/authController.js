@@ -6,7 +6,7 @@ const jwt=require("jsonwebtoken")
 // REGISTER USER
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password,role } = req.body;
 
     // 1. Validation
     if (!name || !email || !password) {
@@ -28,6 +28,7 @@ const registerUser = async (req, res) => {
       name,
       email,
       password: hashedPassword,
+      role,
     });
 
     // 5. Response
