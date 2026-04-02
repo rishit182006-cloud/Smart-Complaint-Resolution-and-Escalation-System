@@ -7,7 +7,9 @@ const authorizeRoles = require("../middleware/roleMiddleware");
 const { createComplaint,
   getMyComplaints,
   getAllComplaints,
-  updateComplaintStatus } = require("../controllers/complaintController");
+  updateComplaintStatus,
+  assignComplaint,
+  getAssignedComplaints } = require("../controllers/complaintController");
 
 
   
@@ -27,6 +29,26 @@ router.get(
   protect,
   authorizeRoles("staff", "supervisor", "admin"),
   getAllComplaints
+);
+
+
+
+//  Get assigned complaints
+router.get(
+  "/assigned",
+  protect,
+  authorizeRoles("staff", "supervisor"),
+  getAssignedComplaints
+);
+
+
+
+//  Assign complaint
+router.put(
+  "/assign/:id",
+  protect,
+  authorizeRoles("admin", "supervisor"),
+  assignComplaint
 );
 
 

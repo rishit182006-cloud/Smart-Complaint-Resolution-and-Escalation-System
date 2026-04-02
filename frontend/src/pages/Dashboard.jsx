@@ -1,14 +1,36 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from '../components/ui/Button';
 import ComplaintCard from '../components/ComplaintCard';
 import { useNavigate } from 'react-router-dom';
-import { ComplaintContext } from '../context/ComplaintContext';
+import { fetchComplaints } from '../api';
 import './Dashboard.css';
 
 const Dashboard = () => {
-  const { complaints } = useContext(ComplaintContext);
+  const [complaints, setComplaints] = useState([]);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('all');
+
+  const loadComplaints = async () => {
+    try {
+      const data = await fetchComplaints();
+      const sanitizedData = data.map(c => ({
+        ...c,
+        status: c.status === 'pending' ? 'open' : c.status
+      }));
+      setComplaints(sanitizedData);
+    } catch (err) {
+      setError(err.message);
+      // Basic fallback error handling
+      if (err.message.includes('Unauthorized')) {
+        navigate('/login');
+      }
+    }
+  };
+
+  useEffect(() => {
+    loadComplaints();
+  }, []);
 
   return (
     <div className="dashboard">
@@ -21,6 +43,12 @@ const Dashboard = () => {
           Raise New Complaint
         </Button>
       </div>
+
+      {error && (
+        <div style={{ padding: '10px', backgroundColor: '#fee2e2', color: 'red', borderRadius: '4px', marginBottom: '20px' }}>
+          <strong>Error:</strong> {error}
+        </div>
+      )}
 
       <div className="dashboard-tabs">
         <button 
@@ -57,7 +85,7 @@ const Dashboard = () => {
 
       <div className="complaints-grid">
         {complaints.filter(c => activeTab === 'all' || c.status === activeTab).map((complaint) => (
-          <ComplaintCard key={complaint.id} complaint={complaint} onClick={(id) => navigate(`/complaint/${id}`)} />
+          <ComplaintCard key={complaint._id} complaint={complaint} onClick={(id) => navigate(`/complaint/${id}`)} />
         ))}
       </div>
     </div>

@@ -5,6 +5,7 @@ import RaiseComplaint from './pages/RaiseComplaint';
 import ComplaintDetails from './pages/ComplaintDetails';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Landing from './pages/Landing';
 import { ComplaintProvider } from './context/ComplaintContext';
 import './App.css';
 
@@ -12,7 +13,7 @@ function App() {
   return (
     <ComplaintProvider>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       

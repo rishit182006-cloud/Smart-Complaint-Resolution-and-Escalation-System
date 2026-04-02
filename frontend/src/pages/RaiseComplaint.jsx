@@ -22,17 +22,47 @@ const RaiseComplaint = () => {
     setFormData(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    addComplaint({
-      title: formData.title,
-      category: formData.category,
-      priority: formData.priority,
-      location: formData.location,
-      description: formData.description
-    });
-    alert('Complaint raised successfully!');
-    navigate('/dashboard');
+    
+    if (!formData.category) {
+      alert("Category is required");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/complaints', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: formData.title,
+          description: formData.description,
+          category: formData.category,
+          priority: formData.priority
+        })
+      });
+
+      if (response.ok) {
+        addComplaint({
+          title: formData.title,
+          category: formData.category,
+          priority: formData.priority,
+          location: formData.location,
+          description: formData.description
+        });
+        alert('Complaint raised successfully!');
+        navigate('/dashboard');
+      } else {
+        const data = await response.json();
+        alert(data.message || 'Failed to create complaint.');
+      }
+    } catch (err) {
+      alert('Network error. Please try again later.');
+    }
   };
 
   return (

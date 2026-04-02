@@ -13,18 +13,49 @@ const Login = () => {
     password: '',
     role: 'student' // default role for testing
   });
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
     setFormData(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulate login and store role in localStorage for frontend demonstration
-    localStorage.setItem('userRole', formData.role);
-    localStorage.setItem('userName', formData.email.split('@')[0]);
-    navigate('/dashboard');
+    setError(null);
+    setLoading(true);
+
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem('token', data.token);
+        
+        // Optional demo retainers so dashboard doesn't break
+        localStorage.setItem('userRole', formData.role);
+        localStorage.setItem('userName', formData.email.split('@')[0]);
+
+        navigate('/dashboard');
+      } else {
+        setError(data.message || 'Login failed. Please check your credentials.');
+      }
+    } catch (err) {
+      setError('Network error. Please make sure the backend is running.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -39,6 +70,11 @@ const Login = () => {
         <Card className="auth-card">
           <CardHeader title="Sign In" />
           <CardContent>
+            {error && (
+              <div style={{ color: 'red', marginBottom: '1rem', padding: '0.5rem', backgroundColor: '#fee2e2', borderRadius: '4px' }}>
+                {error}
+              </div>
+            )}
             <form onSubmit={handleSubmit}>
               <Input
                 id="email"
@@ -73,8 +109,8 @@ const Login = () => {
                 <option value="admin">Administrator</option>
               </Input>
 
-              <Button type="submit" variant="primary" fullWidth className="mt-4">
-                Login
+              <Button type="submit" variant="primary" fullWidth className="mt-4" disabled={loading}>
+                {loading ? 'Logging in...' : 'Login'}
               </Button>
             </form>
             

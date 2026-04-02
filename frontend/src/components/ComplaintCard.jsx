@@ -18,12 +18,12 @@ const ComplaintCard = ({ complaint, onClick }) => {
   return (
     <Card 
       className={`complaint-card status-border-${effectiveStatus}`}
-      onClick={() => onClick(complaint.id)}
+      onClick={() => onClick(complaint._id || complaint.id)}
     >
       <CardHeader 
         title={
           <div className="complaint-card-title">
-            <span className="complaint-id">{complaint.id}</span>
+            <span className="complaint-id">{complaint._id || complaint.id}</span>
             <h4>{complaint.title}</h4>
           </div>
         }

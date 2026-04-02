@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Card, { CardHeader, CardContent } from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import { ArrowLeft, Clock, MessageSquare, AlertTriangle, CheckCircle, User } from 'lucide-react';
+import { fetchComplaints, updateComplaintStatus, assignComplaint } from '../api';
 import './ComplaintDetails.css';
 
 const MOCK_COMPLAINT_DETAILS = {
@@ -37,17 +38,68 @@ const MOCK_COMPLAINT_DETAILS = {
 const ComplaintDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [complaint, setComplaint] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [newComment, setNewComment] = useState('');
-  
-  // In a real app we would fetch data based on id
-  const complaint = MOCK_COMPLAINT_DETAILS;
+
+  const [status, setStatus] = useState('');
+  const [assignedTo, setAssignedTo] = useState('');
+
+  const userRole = localStorage.getItem('userRole') || 'student';
+
+  const loadComplaint = async () => {
+    try {
+      setLoading(true);
+      const allComplaints = await fetchComplaints();
+      const found = allComplaints.find(c => c._id === id || c.id === id);
+      if (!found) {
+        setError('Complaint not found');
+      } else {
+        setComplaint({
+          ...found,
+          status: found.status === 'pending' ? 'open' : found.status
+        });
+        setStatus(found.status === 'pending' ? 'open' : (found.status || 'open'));
+        setAssignedTo(found.assignedTo || '');
+      }
+    } catch (err) {
+      setError(err.message);
+      if (err.message.includes('Unauthorized')) navigate('/login');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadComplaint();
+  }, [id]);
+
+  const handleStatusUpdate = async () => {
+    if (!status) return;
+    try {
+      await updateComplaintStatus(id, status);
+      alert('Status updated successfully!');
+      loadComplaint();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleAssign = async () => {
+    if (!assignedTo) return;
+    try {
+      await assignComplaint(id, assignedTo);
+      alert('Complaint assigned successfully!');
+      loadComplaint();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
 
   const handleAddComment = (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
-    
-    // Simulate API call
-    console.log('Adding comment:', newComment);
     setNewComment('');
   };
 
@@ -59,6 +111,21 @@ const ComplaintDetails = () => {
     }
   };
 
+  if (loading) return <div style={{ padding: '20px', textAlign: 'center' }}>Loading details...</div>;
+  if (error) return <div style={{ padding: '20px', color: 'red', textAlign: 'center' }}>{error}</div>;
+  if (!complaint) return null;
+
+  // Provide fallbacks for UI elements not fully implemented in backend yet
+  const displayComplaint = {
+    ...complaint,
+    timeline: complaint.timeline || [],
+    comments: complaint.comments || [],
+    reporter: complaint.user ? { name: complaint.user.name, role: 'User', phone: 'N/A' } : { name: 'Unknown User', role: 'Student', phone: 'N/A' },
+    date: complaint.createdAt ? new Date(complaint.createdAt).toLocaleString() : 'N/A',
+    location: complaint.location || 'Not specified',
+    id: complaint._id || complaint.id
+  };
+
   return (
     <div className="complaint-details-page">
       <button className="back-button" onClick={() => navigate('/dashboard')}>
@@ -68,13 +135,39 @@ const ComplaintDetails = () => {
 
       <div className="details-header">
         <div className="title-section">
-          <span className="complaint-id-large">{complaint.id}</span>
-          <h1 className="page-title">{complaint.title}</h1>
+          <span className="complaint-id-large">{displayComplaint.id}</span>
+          <h1 className="page-title">{displayComplaint.title}</h1>
         </div>
-        <div className="action-section">
-          {/* Admin/Staff actions can go here based on role */}
-          {complaint.status !== 'resolved' && (
-            <Button variant="success">Mark as Resolved</Button>
+        <div className="action-section" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+          {(userRole === 'staff' || userRole === 'supervisor' || userRole === 'admin') && (
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <select 
+                className="input-field" 
+                value={status} 
+                onChange={(e) => setStatus(e.target.value)}
+                style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+              >
+                <option value="open">Open</option>
+                <option value="in-progress">In Progress</option>
+                <option value="resolved">Resolved</option>
+                <option value="escalated">Escalated</option>
+              </select>
+              <Button variant="primary" onClick={handleStatusUpdate}>Update Status</Button>
+            </div>
+          )}
+
+          {(userRole === 'admin' || userRole === 'supervisor') && (
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <input 
+                type="text"
+                placeholder="Assign to User ID"
+                className="input-field"
+                value={assignedTo}
+                onChange={(e) => setAssignedTo(e.target.value)}
+                style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+              />
+              <Button variant="secondary" onClick={handleAssign}>Assign</Button>
+            </div>
           )}
         </div>
       </div>
@@ -85,36 +178,38 @@ const ComplaintDetails = () => {
           <Card className="info-card">
             <CardContent>
               <div className="info-badges">
-                <Badge variant={complaint.status} size="lg">
+                <Badge variant={displayComplaint.status} size="lg">
                   <span className="badge-content">
-                    {getStatusIcon(complaint.status)}
-                    {complaint.status.toUpperCase()}
+                    {getStatusIcon(displayComplaint.status)}
+                    {displayComplaint.status ? displayComplaint.status.toUpperCase() : ''}
                   </span>
                 </Badge>
-                <Badge variant={complaint.priority} size="lg">{complaint.priority.toUpperCase()} PRIORITY</Badge>
-                {complaint.status === 'escalated' && (
-                  <Badge variant="danger" size="lg">Level: {complaint.escalationLevel}</Badge>
+                <Badge variant={displayComplaint.priority || 'low'} size="lg">
+                  {displayComplaint.priority ? displayComplaint.priority.toUpperCase() : 'LOW'} PRIORITY
+                </Badge>
+                {displayComplaint.status === 'escalated' && displayComplaint.escalationLevel && (
+                  <Badge variant="danger" size="lg">Level: {displayComplaint.escalationLevel}</Badge>
                 )}
               </div>
 
               <div className="info-grid">
                 <div className="info-group">
                   <span className="info-label">Category</span>
-                  <span className="info-value">{complaint.category}</span>
+                  <span className="info-value">{displayComplaint.category}</span>
                 </div>
                 <div className="info-group">
                   <span className="info-label">Location</span>
-                  <span className="info-value">{complaint.location}</span>
+                  <span className="info-value">{displayComplaint.location}</span>
                 </div>
                 <div className="info-group">
                   <span className="info-label">Date Reported</span>
-                  <span className="info-value">{complaint.date}</span>
+                  <span className="info-value">{displayComplaint.date}</span>
                 </div>
               </div>
 
               <div className="description-section">
                 <h3 className="section-title">Description</h3>
-                <p className="description-text">{complaint.description}</p>
+                <p className="description-text">{displayComplaint.description}</p>
               </div>
             </CardContent>
           </Card>
@@ -124,7 +219,7 @@ const ComplaintDetails = () => {
             <CardHeader title="Comments & Discussion" />
             <CardContent>
               <div className="comments-list">
-                {complaint.comments.map(comment => (
+                {displayComplaint.comments.map(comment => (
                   <div key={comment.id} className="comment-item">
                     <div className="comment-avatar">
                       <User size={20} />
@@ -139,6 +234,9 @@ const ComplaintDetails = () => {
                     </div>
                   </div>
                 ))}
+                {displayComplaint.comments.length === 0 && (
+                  <p style={{ color: '#6b7280', fontStyle: 'italic' }}>No comments yet.</p>
+                )}
               </div>
               
               <form className="add-comment-form" onSubmit={handleAddComment}>
@@ -165,11 +263,11 @@ const ComplaintDetails = () => {
             <CardHeader title="Status Timeline" />
             <CardContent>
               <div className="timeline">
-                {complaint.timeline.map((event, index) => (
+                {displayComplaint.timeline.map((event, index) => (
                   <div key={event.id} className="timeline-event">
                     <div className="timeline-marker">
                       <div className={`marker-dot status-${event.status}`}></div>
-                      {index < complaint.timeline.length - 1 && <div className="marker-line"></div>}
+                      {index < displayComplaint.timeline.length - 1 && <div className="marker-line"></div>}
                     </div>
                     <div className="timeline-content">
                       <div className="timeline-header">
@@ -180,6 +278,9 @@ const ComplaintDetails = () => {
                     </div>
                   </div>
                 ))}
+                {displayComplaint.timeline.length === 0 && (
+                  <p style={{ color: '#6b7280', fontStyle: 'italic' }}>No timeline events yet.</p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -190,15 +291,15 @@ const ComplaintDetails = () => {
               <div className="reporter-info">
                 <div className="info-group">
                   <span className="info-label">Name</span>
-                  <span className="info-value">{complaint.reporter.name}</span>
+                  <span className="info-value">{displayComplaint.reporter.name}</span>
                 </div>
                 <div className="info-group">
                   <span className="info-label">Role</span>
-                  <span className="info-value">{complaint.reporter.role}</span>
+                  <span className="info-value">{displayComplaint.reporter.role}</span>
                 </div>
                 <div className="info-group">
                   <span className="info-label">Contact</span>
-                  <span className="info-value">{complaint.reporter.phone}</span>
+                  <span className="info-value">{displayComplaint.reporter.phone}</span>
                 </div>
               </div>
             </CardContent>

@@ -3,11 +3,13 @@ const Complaint = require("../models/Complaint");
 // Create complaint (student)
 const createComplaint = async (req, res) => {
   try {
-    const { title, description } = req.body;
+    const { title, description, category, priority } = req.body;
 
     const complaint = await Complaint.create({
       title,
       description,
+      category,
+      priority: priority || "low",
       user: req.user.id, // from token
     });
 
@@ -56,6 +58,12 @@ const updateComplaintStatus = async (req, res) => {
   try {
     const { status } = req.body;
 
+    // validate status
+    const validStatuses = ["open", "in-progress", "resolved", "escalated"];
+    if (status && !validStatuses.includes(status)) {
+      return res.status(400).json({ message: "Invalid status value" });
+    }
+
     const complaint = await Complaint.findById(req.params.id);
 
     if (!complaint) {
@@ -78,11 +86,55 @@ const updateComplaintStatus = async (req, res) => {
 
 
 
+// Assign complaint (admin/supervisor)
+const assignComplaint = async (req, res) => {
+  try {
+    const { assignedTo } = req.body;
+
+    const complaint = await Complaint.findById(req.params.id);
+
+    if (!complaint) {
+      return res.status(404).json({ message: "Complaint not found" });
+    }
+
+    complaint.assignedTo = assignedTo;
+    
+    await complaint.save();
+
+    res.status(200).json({
+      message: "Complaint assigned successfully",
+      complaint,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+
+// Get assigned complaints (staff/supervisor)
+const getAssignedComplaints = async (req, res) => {
+  try {
+    const complaints = await Complaint.find({ assignedTo: req.user.id }).populate(
+      "user",
+      "name email"
+    );
+
+    res.status(200).json(complaints);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+
 // 🔥 EXPORT ALL FUNCTIONS
 module.exports = {
   createComplaint,
   getMyComplaints,
   getAllComplaints,
   updateComplaintStatus,
+  assignComplaint,
+  getAssignedComplaints,
 };
 
