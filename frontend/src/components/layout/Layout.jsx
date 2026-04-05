@@ -2,19 +2,23 @@ import React, { useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
+import { useAuth } from '../../context/AuthContext';
 import './Layout.css';
 
 const Layout = () => {
   const navigate = useNavigate();
-  const role = localStorage.getItem('userRole') || 'student';
-  const userName = localStorage.getItem('userName') || 'Demo User';
+  const { user } = useAuth();
+  
+  const role = user?.role || 'student';
+  const userName = user?.name || 'Demo User';
 
   useEffect(() => {
-    if (!localStorage.getItem('userRole')) {
-       // redirect to login if no mock session exists
+    if (!user) {
+       // redirect to login if no session exists
        navigate('/login');
     }
-  }, [navigate]);
+  }, [user, navigate]);
+
 
   return (
     <div className="layout-container">

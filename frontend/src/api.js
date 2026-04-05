@@ -44,6 +44,42 @@ export const fetchComplaint = async (id) => {
   return handleResponse(response);
 };
 
+export const fetchAssignedComplaints = async () => {
+  const response = await fetch(`${API_URL}/complaints/assigned`, {
+    method: 'GET',
+    headers: getHeaders()
+  });
+
+  return handleResponse(response);
+};
+
+export const fetchNotifications = async () => {
+  const response = await fetch(`${API_URL}/notifications`, {
+    method: 'GET',
+    headers: getHeaders()
+  });
+
+  return handleResponse(response);
+};
+
+export const sendNotification = async (payload) => {
+  console.log("Sending notification:", payload.message);
+  
+  try {
+    const response = await fetch(`${API_URL}/notifications`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(payload)
+    });
+    
+    console.log("Response status:", response.status);
+    return await handleResponse(response);
+  } catch (error) {
+    console.error("API Error sending notification:", error);
+    throw error;
+  }
+};
+
 export const updateComplaintStatus = async (id, status) => {
   const response = await fetch(`${API_URL}/complaints/${id}`, {
     method: 'PUT',

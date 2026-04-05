@@ -1,10 +1,13 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, PlusCircle, AlertCircle, LogOut, CheckSquare, BarChart } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import './Sidebar.css';
 
-const Sidebar = ({ role = 'student' }) => {
+const Sidebar = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const role = user?.role || 'student';
 
   // Mock role based links
   const links = [
@@ -22,10 +25,10 @@ const Sidebar = ({ role = 'student' }) => {
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userName');
+    logout();
     navigate('/login');
   };
+
 
   return (
     <aside className="sidebar">

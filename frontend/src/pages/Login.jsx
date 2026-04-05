@@ -4,10 +4,12 @@ import Card, { CardContent, CardHeader } from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import { AlertCircle } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import './Auth.css';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -41,11 +43,8 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem('token', data.token);
-
-        // Optional demo retainers so dashboard doesn't break
-        localStorage.setItem('userRole', formData.role);
-        localStorage.setItem('userName', formData.email.split('@')[0]);
+        // Use AuthContext to store full user details
+        login(data.user, data.token);
 
         navigate('/dashboard');
       } else {
@@ -57,6 +56,7 @@ const Login = () => {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="auth-page">

@@ -77,12 +77,16 @@ const ComplaintCard = ({ complaint, onClick }) => {
       </CardContent>
       <CardFooter className="complaint-footer">
         <span className="complaint-date">
-          {isResolved ? `Resolved on ${complaint.resolvedAt || complaint.date}` : `Raised on ${complaint.date}`}
+          {isResolved 
+            ? `Resolved on ${complaint.resolvedAt ? new Date(complaint.resolvedAt).toLocaleString() : 'N/A'}` 
+            : `Raised on ${complaint.createdAt ? new Date(complaint.createdAt).toLocaleString() : 'N/A'}`
+          }
         </span>
         <div className="complaint-action-link">
           View Details <ChevronRight size={16} />
         </div>
       </CardFooter>
+
     </Card>
   );
 };
