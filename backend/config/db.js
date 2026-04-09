@@ -8,17 +8,11 @@ const connectDB = async () => {
       throw new Error("MongoDB connection string (MONGO_URI) is missing!");
     }
 
-    // Safety check: log a masked version of the URI to verify it's being read
-    const maskedUri = uri.replace(/:([^@]+)@/, ":****@");
-    console.log("Attempting to connect to:", maskedUri);
-
-    await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 5000, // Timeout after 5 seconds instead of 30
-    });
+    await mongoose.connect(uri);
 
     console.log("MongoDB Connected Successfully");
   } catch (err) {
-    console.error("DB Connection Error Details:", err);
+    console.log("DB Connection Error:", err.message);
     process.exit(1);
   }
 };
