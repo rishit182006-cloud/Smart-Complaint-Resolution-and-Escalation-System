@@ -3,6 +3,7 @@ import Button from '../components/ui/Button';
 import ComplaintCard from '../components/ComplaintCard';
 import { useNavigate } from 'react-router-dom';
 import { fetchComplaints } from '../api';
+import { useAuth } from '../context/AuthContext';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -10,6 +11,7 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('all');
+  const { user } = useAuth();
 
   const loadComplaints = async () => {
     try {
@@ -39,9 +41,11 @@ const Dashboard = () => {
           <h1 className="page-title">Dashboard</h1>
           <p className="page-subtitle">Welcome back! Here's an overview of the complaints.</p>
         </div>
-        <Button onClick={() => navigate('/raise-complaint')}>
-          Raise New Complaint
-        </Button>
+        {(user?.role || localStorage.getItem('userRole')) === 'student' && (
+          <Button onClick={() => navigate('/raise-complaint')}>
+            Raise New Complaint
+          </Button>
+        )}
       </div>
 
       {error && (
